@@ -13,6 +13,8 @@ const app = express();
 const mongoose = require('mongoose');
 const url = 'mongodb://localhost:27017/conFusion';
 const connect = mongoose.connect(url);
+const session = require('express-session');
+const fileStore = require('session-file-store')(session);
 
 connect.then(
   (db) => {
@@ -30,10 +32,21 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser('12345-5675675-32457834-23'));
+// app.use(cookieParser('12345-5675675-32457834-23'));
+
+app.use(
+  session({
+    name: 'session-id',
+    secret: '12345-5675675-32457834-23',
+    saveUninitialized: false,
+    resave: false,
+    store: new fileStore(),
+  })
+);
 
 function auth(req, res, next) {
-  if (!req.signedCookies.user) {
+  console.log(req.session);
+  if (!req.session.user) {
     console.log(req.headers);
     const authHeader = req.headers.authorization;
     if (!authHeader) {
@@ -49,7 +62,7 @@ function auth(req, res, next) {
     const user = auth[0];
     const pass = auth[1];
     if (user == 'admin' && pass == 'admin') {
-      res.cookie('user', 'admin', { signed: true });
+      req.session.user = 'admin';
       next(); //authorized
     } else {
       let err = new Error('You are not authenticated!');
@@ -59,7 +72,7 @@ function auth(req, res, next) {
       return;
     }
   } else {
-    if (req.signedCookies.user === 'admin') {
+    if (req.session.user === 'admin') {
       next();
     } else {
       let err = new Error('You are not authenticated!');
