@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const passport = require('passport');
 const authenticate = require('./authenticate');
+const config = require('./config');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -13,7 +14,7 @@ const promoRouter = require('./routes/promoRouter');
 const leaderRouter = require('./routes/leaderRouter');
 const app = express();
 const mongoose = require('mongoose');
-const url = 'mongodb://localhost:27017/conFusion';
+const url = config.mongoUrl;
 const connect = mongoose.connect(url);
 const session = require('express-session');
 const fileStore = require('session-file-store')(session);
@@ -39,36 +40,39 @@ app.use(express.urlencoded({ extended: false }));
 
 // app.use(cookieParser('12345-5675675-32457834-23'));
 
-app.use(
-  session({
-    name: 'session-id',
-    secret: '12345-5675675-32457834-23',
-    saveUninitialized: false,
-    resave: false,
-    store: new fileStore(),
-  })
-);
+// app.use(
+//   session({
+//     name: 'session-id',
+//     secret: '12345-5675675-32457834-23',
+//     saveUninitialized: false,
+//     resave: false,
+//     store: new fileStore(),
+//   })
+// );
+
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-function auth(req, res, next) {
-  if (!req.user) {
-    const err = new Error('You are not authenticated!');
-    err.status = 403;
-    next(err);
-  } else {
-    /* if (req.session.user === 'shihab') {
-      next();
-    } else {
-      let err = new Error('You are not authenticated!');
-      err.status = 401;
-      next(err);
-    } */
-    next();
-  }
-}
-app.use(auth);
+
+// function auth(req, res, next) {
+//   if (!req.user) {
+//     const err = new Error('You are not authenticated!');
+//     err.status = 403;
+//     next(err);
+//   } else {
+//     /* if (req.session.user === 'shihab') {
+//       next();
+//     } else {
+//       let err = new Error('You are not authenticated!');
+//       err.status = 401;
+//       next(err);
+//     } */
+//     next();
+//   }
+// }
+// app.use(auth);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
