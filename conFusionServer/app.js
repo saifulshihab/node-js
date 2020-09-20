@@ -3,6 +3,8 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const passport = require('passport');
+const authenticate = require('./authenticate');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -18,7 +20,9 @@ const fileStore = require('session-file-store')(session);
 
 connect.then(
   (db) => {
-    console.log('Connected to Mongo server... ..');
+    console.log(
+      '\n==================- Connected to MongoDB Server -====================\n'
+    );
   },
   (err) => {
     console.log(err);
@@ -32,6 +36,7 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
 // app.use(cookieParser('12345-5675675-32457834-23'));
 
 app.use(
@@ -43,29 +48,29 @@ app.use(
     store: new fileStore(),
   })
 );
+app.use(passport.initialize());
+app.use(passport.session());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 function auth(req, res, next) {
-  console.log(req.session);
-  if (!req.session.user) {
-    let err = new Error('You are not authenticated!');
-    res.setHeader('WWW-Authenticate', 'Basic');
-    err.status = 401;
-    return next(err);
+  if (!req.user) {
+    const err = new Error('You are not authenticated!');
+    err.status = 403;
+    next(err);
   } else {
-    if (req.session.user === 'shihab') {
+    /* if (req.session.user === 'shihab') {
       next();
     } else {
       let err = new Error('You are not authenticated!');
       err.status = 401;
       next(err);
-    }
+    } */
+    next();
   }
 }
 app.use(auth);
 
 app.use(express.static(path.join(__dirname, 'public')));
-
 
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
