@@ -6,14 +6,25 @@ const logger = require('morgan');
 const passport = require('passport');
 const authenticate = require('./authenticate');
 const config = require('./config');
-const cors = require('cors');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const dishRouter = require('./routes/dishRouter');
 const promoRouter = require('./routes/promoRouter');
 const leaderRouter = require('./routes/leaderRouter');
+
 const app = express();
+
+app.all('*', (req, res, next) => {
+  if (req.secure) {
+    return next();
+  } else {
+    res.redirect(307, 
+      'https://' + req.hostname + ':' + app.get('secPort') + req.url
+    );
+  }
+});
+
 const mongoose = require('mongoose');
 const url = config.mongoUrl;
 const connect = mongoose.connect(url);
@@ -35,7 +46,7 @@ connect.then(
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(cors());
+//Middlewares
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
