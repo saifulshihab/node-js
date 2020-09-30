@@ -12,6 +12,7 @@ const usersRouter = require('./routes/users');
 const dishRouter = require('./routes/dishRouter');
 const promoRouter = require('./routes/promoRouter');
 const leaderRouter = require('./routes/leaderRouter');
+const uploadRouter = require('./routes/uploadRouter');
 
 const app = express();
 
@@ -19,7 +20,8 @@ app.all('*', (req, res, next) => {
   if (req.secure) {
     return next();
   } else {
-    res.redirect(307, 
+    res.redirect(
+      307,
       'https://' + req.hostname + ':' + app.get('secPort') + req.url
     );
   }
@@ -68,6 +70,7 @@ app.use(passport.initialize());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/imageUpload', uploadRouter);
 
 // function auth(req, res, next) {
 //   if (!req.user) {
